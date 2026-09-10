@@ -1,0 +1,18 @@
+{
+  "n_bins": 124,
+  "bin_size": 10.0,
+  "min_count": 500,
+  "lut_agreement": 0.972069,
+  "lut_excess_distance": 2.748257058787301e-05,
+  "coverage": 0.9987114071846008,
+  "quantised_truth": {
+    "ab_error": 4.116451740264893,
+    "within_15": 0.9998053908348083,
+    "saturation": 16.102075576782227,
+    "saturation_true": 14.714523315429688,
+    "saturation_ratio": 1.094298145553757,
+    "spread": 15.454754829406738,
+    "spread_true": 14.623862266540527,
+    "spread_ratio": 1.056817586744324
+  }
+}

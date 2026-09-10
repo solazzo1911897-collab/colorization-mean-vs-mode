@@ -48,7 +48,8 @@ def main():
 
     runs, evals = collect(args.results)
     base = json.loads((Path(args.results) / "baselines.json").read_text())
-    mech = json.loads((Path(args.results) / "mechanism.json").read_text())
+    mechanism = json.loads((Path(args.results) / "mechanism.json").read_text())
+    mech, within = mechanism["pairs"], mechanism["within"]
     cfg = read_config(runs["l2"][0])
 
     m = {}
@@ -86,12 +87,37 @@ def main():
     m["MechCross"] = spread([r["l2_vs_expectation"]["mean_distance"] for r in cross])
     m["MechMode"] = spread([r["l2_vs_mode"]["mean_distance"] for r in mech])
     m["MechTruth"] = spread([r["l2_vs_truth"]["mean_distance"] for r in mech])
+
+    # the scale against which the cross-loss distance above has to be read
+    m["WithinLtwo"] = spread([p["mean_distance"] for p in within["l2"]])
+    m["WithinCls"] = spread([p["mean_distance"] for p in within["expectation"]])
+    m["WithinMode"] = spread([p["mean_distance"] for p in within["mode"]])
     m["MechCorr"] = fmt(statistics.mean(
         [r["l2_vs_expectation"]["corr_a"] for r in mech] +
         [r["l2_vs_expectation"]["corr_b"] for r in mech]), 3)
     pc = json.loads((Path(args.results) / "per_class.json").read_text())
     m["PerClassInstances"] = f"{pc['instances']:+.2f}"
     m["PerClassPixels"] = f"{pc['pixels']:+.2f}"
+
+    ent = json.loads((Path(args.results) / "entropy.json").read_text())
+    m["EntropyCorrLtwo"] = f"{ent['correlation']['ratio_l2']:+.2f}"
+    m["EntropyCorrCls"] = f"{ent['correlation']['ratio_cls']:+.2f}"
+    m["EntropyBuckets"] = str(len(ent["buckets"]))
+    m["EntropyChromaRatio"] = fmt(
+        ent["buckets"][-1]["chroma_true"] / ent["buckets"][0]["chroma_true"], 1)
+
+    bins = json.loads((Path(args.results) / "bins.json").read_text())
+    m["LutAgree"] = fmt(100 * bins["lut_agreement"], 1)
+    m["LutExcess"] = fmt(100 * bins["lut_excess_distance"], 3)
+    m["BinCoverage"] = fmt(100 * bins["coverage"], 1)
+    m["QuantErr"] = fmt(bins["quantised_truth"]["ab_error"])
+    m["QuantSat"] = fmt(100 * bins["quantised_truth"]["saturation_ratio"], 1)
+
+    # the abstract quotes the means alone; the ranges belong in the results
+    m["MechSameBare"] = fmt(statistics.mean(
+        [r["l2_vs_expectation"]["mean_distance"] for r in same]))
+    m["MechTruthBare"] = fmt(statistics.mean(
+        [r["l2_vs_truth"]["mean_distance"] for r in mech]))
 
     m["MechRatio"] = fmt(
         statistics.mean([r["l2_vs_truth"]["mean_distance"] for r in mech]) /

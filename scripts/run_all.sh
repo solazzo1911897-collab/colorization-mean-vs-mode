@@ -10,5 +10,7 @@ done
 
 uv run python scripts/evaluate.py
 uv run python scripts/mechanism.py
+uv run python scripts/bins_check.py
 uv run python scripts/figures.py
+uv run python scripts/entropy.py
 uv run python scripts/report_numbers.py

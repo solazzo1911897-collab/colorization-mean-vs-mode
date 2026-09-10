@@ -6,10 +6,18 @@ expectation of the classification network's predicted distribution, taken at
 temperature 1. Nothing forces this: the two were trained separately, with
 different losses and different output layers.
 
+Saying that the distance between them is small needs a scale, and the distance
+to the ground truth is the wrong one: it says the two are closer to each other
+than either is to the answer, not that they agree. The right scale is how far
+apart two runs of the *same* loss are when they differ only in the seed, which
+is the floor that any pair of trained networks sits above. That is computed
+here too.
+
     python scripts/mechanism.py
 """
 
 import argparse
+import itertools
 import json
 import sys
 from pathlib import Path
@@ -19,6 +27,8 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from colorization.data import load_split, normalise_lightness  # noqa: E402
 from colorization.runs import list_runs, load_run, predict, read_config  # noqa: E402
+
+MODE_TEMPERATURE = 0.02
 
 
 def agreement(u, v):
@@ -49,25 +59,30 @@ def main():
     for r in list_runs(args.results):
         runs[read_config(r)["loss"]].append(r)
 
+    # every prediction once, so that the cross-loss and the within-loss
+    # comparisons below are computed from exactly the same tensors
+    pred = {}
+    for r in runs["l2"]:
+        model, _, _ = load_run(r)
+        pred[("l2", read_config(r)["seed"])] = predict(model, None, x)
+    for r in runs["classification"]:
+        model, bins, _ = load_run(r)
+        seed = read_config(r)["seed"]
+        pred[("expectation", seed)] = predict(model, bins, x, temperature=1.0)
+        pred[("mode", seed)] = predict(model, bins, x, temperature=MODE_TEMPERATURE)
+
+    seeds = sorted({s for _, s in pred})
+
     rows = []
-    for r_l2 in runs["l2"]:
-        seed_l2 = read_config(r_l2)["seed"]
-        m_l2, _, _ = load_run(r_l2)
-        pred_l2 = predict(m_l2, None, x)
-
-        for r_cls in runs["classification"]:
-            seed_cls = read_config(r_cls)["seed"]
-            m_cls, bins, _ = load_run(r_cls)
-            expectation = predict(m_cls, bins, x, temperature=1.0)
-            mode = predict(m_cls, bins, x, temperature=0.02)
-
+    for seed_l2 in seeds:
+        for seed_cls in seeds:
             rows.append({
                 "seed_l2": seed_l2,
                 "seed_cls": seed_cls,
                 "same_seed": seed_l2 == seed_cls,
-                "l2_vs_expectation": agreement(pred_l2, expectation),
-                "l2_vs_mode": agreement(pred_l2, mode),
-                "l2_vs_truth": agreement(pred_l2, truth),
+                "l2_vs_expectation": agreement(pred[("l2", seed_l2)], pred[("expectation", seed_cls)]),
+                "l2_vs_mode": agreement(pred[("l2", seed_l2)], pred[("mode", seed_cls)]),
+                "l2_vs_truth": agreement(pred[("l2", seed_l2)], truth),
             })
             r = rows[-1]
             print(f"L2 seed {seed_l2} against classification seed {seed_cls}: "
@@ -75,8 +90,19 @@ def main():
                   f"to its mode {r['l2_vs_mode']['mean_distance']:.2f}, "
                   f"to the truth {r['l2_vs_truth']['mean_distance']:.2f}")
 
+    # the scale: two runs of one loss, differing only in the seed
+    within = {}
+    for group in ("l2", "expectation", "mode"):
+        within[group] = [
+            {"seeds": [a, b], **agreement(pred[(group, a)], pred[(group, b)])}
+            for a, b in itertools.combinations(seeds, 2)
+        ]
+        ds = [p["mean_distance"] for p in within[group]]
+        print(f"within {group:12s}: {sum(ds) / len(ds):.2f} "
+              f"[{min(ds):.2f}, {max(ds):.2f}] over {len(ds)} seed pairs")
+
     out = Path(args.results) / "mechanism.json"
-    out.write_text(json.dumps(rows, indent=2))
+    out.write_text(json.dumps({"pairs": rows, "within": within}, indent=2))
     print(f"\nwritten to {out}")
 
 

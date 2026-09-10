@@ -81,10 +81,11 @@ class ChromaBins:
         """Nearest kept centre for every point of a grid finer than the bins.
 
         Doing this once turns encoding a batch from a distance matrix against
-        every bin into an integer lookup. Measured on two million real pixels it
-        picks the same centre as the exact calculation 97.4% of the time, and
-        the ones it misses land 0.004% further away on average, which is not
-        worth a matrix multiplication per batch.
+        every bin into an integer lookup. Measured by scripts/bins_check.py on
+        two million real pixels it picks the same centre as the exact
+        calculation 97.2% of the time, and the ones it misses land 0.003%
+        further away on average, which is not worth a matrix multiplication per
+        batch.
         """
         step = self.size / self.LUT_REFINE
         side = int(2 * self.LIMIT / step)
