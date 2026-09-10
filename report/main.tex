@@ -1,0 +1,252 @@
+\documentclass{article}
+
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{overpic}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\usepackage[accepted]{dlaiml2026}
+
+\input{numbers}
+
+\dlaititlerunning{Mean or Mode}
+
+\begin{document}
+
+\twocolumn[
+\dlaititle{Mean or Mode: What the Loss Chooses When Colour Is Ambiguous}
+
+\begin{center}\today\end{center}
+
+\begin{dlaiauthorlist}
+\dlaiauthor{Stefano Solazzo}{}
+\end{dlaiauthorlist}
+
+\dlaicorrespondingauthor{Stefano Solazzo}{solazzo.1911897@studenti.uniroma1.it}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+\begin{abstract}
+%
+Colourising a greyscale photograph has no single correct answer: a grey car is
+consistent with red, blue or white, and under a squared error the optimal
+prediction is then the mean of the plausible colours, which is close to grey.
+Two colourisers are trained on CIFAR-10 with everything but the loss held fixed,
+the second reading its predicted distribution at a temperature that interpolates
+between that distribution's mean and its mode. Sweeping it traces a frontier on
+which accuracy and colour variety cannot both be maximised. At temperature one
+the classification network reproduces the squared error network pixel by pixel,
+\MechSame{} apart against the \MechTruth{} separating either from the truth, and
+does so across independent seeds: the desaturation is a property of the question
+the loss asks, not of a model or a run.
+%
+\end{abstract}
+
+% ------------------------------------------------------------------------------
+\section{Introduction}
+
+Given the lightness of a photograph, what colour was it? For many pixels the
+question has no answer: a greyscale car constrains its colour hardly at all, a
+greyscale frog constrains it a great deal. What exists is not a function from
+lightness to colour but a conditional distribution $p(a,b \mid L)$, wide in the
+first case and narrow in the second.
+
+A network emits one colour per pixel, so something must collapse that
+distribution, and the loss decides what. Let $\mu = \mathbb{E}[Y \mid X = x]$.
+Adding and subtracting $\mu$ inside the squared error and expanding gives
+%
+\begin{equation}\label{eq:mean}
+\mathbb{E}\big[\lVert \hat{y} - Y \rVert^2\big]
+  = \lVert \hat{y} - \mu \rVert^2 + \operatorname{Var}(Y \mid X = x)\,,
+\end{equation}
+%
+since the cross term contains $\mathbb{E}[\mu - Y] = 0$. The second term is
+independent of the prediction, so the minimiser is $\hat{y} = \mu$
+\cite{bishop2006pattern}: the model produces not a plausible colour but the
+average of the plausible ones, and the average of red, blue and white is a
+barely tinted grey.
+
+% ------------------------------------------------------------------------------
+\section{Related work}
+
+Posing colourisation as classification over quantised $ab$ bins, and decoding
+with an annealed mean, is due to Zhang et al.~\cite{zhang2016colorful}; Larsson
+et al.~\cite{larsson2016learning} independently predicted per-pixel colour
+histograms. That a squared error averages ambiguous targets is likewise
+established~\cite{mathieu2016beyond}. Neither is claimed as new. What is added
+is a controlled measurement: everything but the loss is held fixed, the frontier
+is traced by one knob rather than two tuned systems, and the networks are
+compared against each other pixel by pixel. Three departures
+from~\cite{zhang2016colorful} follow: their class rebalancing is a second
+mechanism for raising vividness and would confound the trade measured here, so
+the cross-entropy is left plain; their fixed 313-bin grid becomes the same
+\BinSize{}-unit grid cut to the cells the data visits; and CIFAR-10 replaces
+ImageNet.
+
+% ------------------------------------------------------------------------------
+\section{Method}
+
+Work is in CIE Lab, which separates the lightness the network is given from the
+chroma it must guess and in which euclidean distance approximates perceived
+colour difference. The network receives $L$ and predicts $(a,b)$ everywhere.
+
+\paragraph*{Architecture.} Six blocks of $3\times3$ convolution, batch
+normalisation~\cite{ioffe2015batchnorm} and ReLU at $64$ channels, dilations
+$1,1,2,4,8,1$~\cite{yu2016dilated}, then a $1\times1$ convolution to the output.
+Dilation rather than striding keeps full resolution and gives a receptive field
+of $35$ pixels, wider than the image, so residual uncertainty is ambiguity in
+the data and not myopia. Everything up to the final convolution is
+shared; the first model minimises the
+squared error on $(a,b)$, the second quantises the $ab$ plane into
+\BinSize{}-unit cells, keeps the \NBins{} the training set uses, and minimises
+the cross-entropy over them.
+
+\paragraph*{Readout.} With bin centres $c_k$ and probabilities $p_k$,
+%
+\begin{equation}\label{eq:annealed}
+\hat{y}(T) = \sum_k \frac{\exp(\log p_k / T)}{\sum_j \exp(\log p_j / T)}\, c_k \,,
+\end{equation}
+%
+the distribution's mean at $T=1$, which is what Equation~\eqref{eq:mean}
+predicts the squared error model produces, and its mode as $T \to 0$.
+
+\paragraph*{Metrics and protocol.} Colour error is the mean euclidean distance
+to the truth in $ab$; vividness is mean chroma against the truth's own. Vividness
+alone is insufficient, since a model painting every pixel the same beige scores
+\BaseMeanSat{}\%, so variety, the mean distance from the model's own average
+output and zero for any constant prediction, sits beside it.
+\NSeeds{} seeds, \NEpochs{} epochs, batch \BatchSize{},
+AdamW~\cite{loshchilov2019adamw} with a one-cycle
+schedule~\cite{smith2019onecycle}, in PyTorch~\cite{paszke2019pytorch} on a
+laptop GPU. All numbers are on the \NTest{} held-out test images of
+CIFAR-10~\cite{krizhevsky2009cifar}; labels are never shown to the colourisers.
+Code:
+\url{https://github.com/solazzo1911897-collab/colorization-mean-vs-mode}.
+
+% ------------------------------------------------------------------------------
+\section{Results}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.88\linewidth]{../figures/fig1_qualitative.png}
+    \caption{The two losses on the same test images, the classification model
+    read at its mode. Both are muted against the truth, and muted in nearly the
+    same way.}
+    \label{fig:qualitative}
+\end{figure}
+
+\paragraph*{Baselines and the cost of the mean.} Grey everywhere gives
+\BaseGreyErr{} error; the average training colour gives \BaseMeanErr{} at
+\BaseMeanSat{}\% vividness and \BaseMeanSpread{}\% variety, the pair that
+motivates reporting both. The squared error model reaches \LtwoErr{} at
+\LtwoSat{}\% vividness and \LtwoSpread{}\% variety, beating both
+(Figure~\ref{fig:qualitative}).
+
+\paragraph*{The frontier.} Sweeping $T$ (Figure~\ref{fig:frontier}) turns one
+prediction into a curve, and the squared error model sits on it: at
+$T=\ClsMeanT{}$ the classification model gives \ClsMeanErr{} and
+\ClsMeanSpread{}\% variety against \LtwoErr{} and \LtwoSpread{}\%. Toward the
+mode variety rises and accuracy falls, from \ClsBestSpread{}\% at \ClsBestErr{}
+($T=\ClsBestT{}$, lowest error) to \ClsModeSpread{}\% at \ClsModeErr{}. Neither end wins on both axes, and the squared error model cannot
+move along the curve at all. The range is narrow, though: even at the mode only
+\ClsModeSat{}\% of the truth's vividness is kept against \LtwoSat{}\%. With this
+much data the conditional distribution is concentrated enough that its mean and
+its mode nearly coincide, which is why the readout alone cannot close the gap.
+Vividness is not monotone in $T$, rising where the softmax flattens toward the
+bin grid's centroid while variety does not.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.88\linewidth]{../figures/fig2_frontier.png}
+    \caption{Accuracy against vividness (left) and variety (right) as the
+    readout temperature is swept; all \NSeeds{} seeds drawn. The constant
+    baseline sits at \BaseMeanSat{}\% vividness and zero variety.}
+    \label{fig:frontier}
+\end{figure}
+
+\paragraph*{The two models are one model.} Equation~\eqref{eq:mean} predicts the
+squared error output should coincide with the expectation of the classification
+model's distribution, and it does: \MechSame{} in $ab$ units between them
+against \MechTruth{} between either and the truth, a factor of \MechRatio{};
+against that model's mode it is \MechMode{}. The control is the seed: pairs from \emph{different}
+initialisations give \MechCross{}, indistinguishable from the matched ones
+(Figure~\ref{fig:mechanism}).
+
+\paragraph*{A prediction that failed.} The desaturation was expected to be worst
+where colour is least predictable, yet grouped by CIFAR-10 class the correlation
+with vividness is \PerClassInstances{} between instances and \PerClassPixels{}
+over all pixels: no relation in the predicted direction. A per-pixel version
+using predictive entropy was also inconclusive (appendix).
+
+\paragraph*{Discussion.} That the two models agree is what
+Equation~\eqref{eq:mean} predicts, so the result is a confirmation rather than a
+surprise. What it adds is that the agreement survives finite data and runs
+sharing nothing but the loss, locating the desaturation in the objective rather
+than in any model. Vividness therefore cannot be bought by changing the loss: it
+has to come from the readout or from reweighting rare colours.
+
+% ------------------------------------------------------------------------------
+\section*{Statement on the use of AI}
+
+Anthropic's Claude was used as an assistive tool throughout this
+project. It supported the refinement of the experimental methodology,
+assisted in extending and debugging the codebase, and aided in source
+verification and bibliographic assembly. It was also employed to polish,
+format, and synthesize drafts into the final report.
+
+The Lab conversion was validated against published sRGB primaries, all
+citations were cross-checked at source, and all numerical values were
+derived directly from run logs. Failed predictions (e.g., Section~4)
+have been retained as observed.
+
+
+\bibliography{references.bib}
+\bibliographystyle{dlaiml2026}
+
+\section*{Appendix}
+
+The main limitations of this study are the resolution, at which colour ambiguity
+carries no texture component; a single dataset family; the absence of any
+perceptual evaluation, which for colourisation is what ultimately matters and
+requires human judgement rather than a distance in Lab; and class rebalancing,
+excluded by design, whose contribution to vividness is the obvious next
+measurement.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\linewidth]{../figures/fig4_mechanism.png}
+    \caption{Squared error output against the classification readout, per pixel,
+    on the $a$ channel. Left, the expectation of its distribution, which agrees
+    along the diagonal; right, its most likely bin, where the correspondence is
+    gone and the discrete bin centres band the plot.}
+    \label{fig:mechanism}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\linewidth]{../figures/fig3_per_class.png}
+    \caption{Vividness against two measures of how ambiguous the colour of a
+    CIFAR-10 class is. Neither shows the predicted relation. Vividness is
+    reported as a ratio to each class's own ground truth, so classes dominated
+    by large saturated regions of sky or sea carry a high denominator whatever
+    their ambiguity, and the measure conflates the two. Kept because the
+    prediction was made before the measurement.}
+    \label{fig:perclass}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\linewidth]{../figures/fig5_temperature.png}
+    \caption{The same images decoded at increasing temperature, from the most
+    likely colour to the mean of the distribution.}
+    \label{fig:temperature}
+\end{figure}
+
+\end{document}

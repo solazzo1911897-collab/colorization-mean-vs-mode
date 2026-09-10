@@ -1,0 +1,16 @@
+loss: l2
+seed: 0
+
+width: 64
+epochs: 20
+batch_size: 128
+lr: 0.002
+weight_decay: 0.0001
+
+# ignored by this loss, kept so that the two configs stay comparable
+bin_size: 10.0
+bin_min_count: 500
+eval_temperature: 1.0
+
+device: auto
+data_root: data

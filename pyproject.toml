@@ -1,0 +1,15 @@
+[project]
+name = "colorization-mean-vs-mode"
+version = "1.0.0"
+description = "What the loss picks when the colour of a pixel is genuinely ambiguous"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.6",
+    "torchvision>=0.21",
+    "numpy>=2.0",
+    "matplotlib>=3.9",
+    "pyyaml>=6.0",
+]
+
+[tool.uv]
+package = false

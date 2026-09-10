@@ -1,0 +1,245 @@
+{
+  "config": {
+    "loss": "classification",
+    "seed": 2,
+    "width": 64,
+    "epochs": 20,
+    "batch_size": 128,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "bin_size": 10.0,
+    "bin_min_count": 500,
+    "eval_temperature": 0.38,
+    "device": "auto",
+    "data_root": "data"
+  },
+  "n_test": 10000,
+  "temperature_sweep": [
+    {
+      "temperature": 0.02,
+      "ab_error": 13.626676559448242,
+      "within_15": 0.6916771531105042,
+      "saturation": 9.271812438964844,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.630113000619082,
+      "spread": 8.431368827819824,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5765487033552579
+    },
+    {
+      "temperature": 0.04,
+      "ab_error": 13.497547149658203,
+      "within_15": 0.6953392624855042,
+      "saturation": 9.099433898925781,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.6183981433760815,
+      "spread": 8.218326568603516,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5619805779631205
+    },
+    {
+      "temperature": 0.06,
+      "ab_error": 13.377518653869629,
+      "within_15": 0.6985803842544556,
+      "saturation": 8.942290306091309,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.6077186541757965,
+      "spread": 8.023630142211914,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5486669660839203
+    },
+    {
+      "temperature": 0.1,
+      "ab_error": 13.166998863220215,
+      "within_15": 0.7038891315460205,
+      "saturation": 8.674479484558105,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5895182126261626,
+      "spread": 7.696287631988525,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5262828308768793
+    },
+    {
+      "temperature": 0.15,
+      "ab_error": 12.957741737365723,
+      "within_15": 0.7085480690002441,
+      "saturation": 8.420798301696777,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5722780222765834,
+      "spread": 7.4019951820373535,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5061587046653986
+    },
+    {
+      "temperature": 0.2,
+      "ab_error": 12.798922538757324,
+      "within_15": 0.711717963218689,
+      "saturation": 8.243075370788574,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5601999598685513,
+      "spread": 7.214947700500488,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.49336813825225406
+    },
+    {
+      "temperature": 0.25,
+      "ab_error": 12.67837142944336,
+      "within_15": 0.7138930559158325,
+      "saturation": 8.12816047668457,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5523903358908923,
+      "spread": 7.109597682952881,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.4861641578244126
+    },
+    {
+      "temperature": 0.3,
+      "ab_error": 12.585878372192383,
+      "within_15": 0.7153499722480774,
+      "saturation": 8.065591812133789,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5481381652150559,
+      "spread": 7.064600944519043,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.48308721839393187
+    },
+    {
+      "temperature": 0.38,
+      "ab_error": 12.478484153747559,
+      "within_15": 0.7169433832168579,
+      "saturation": 8.052080154418945,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5472199120426493,
+      "spread": 7.078531265258789,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.4840397930616801
+    },
+    {
+      "temperature": 0.5,
+      "ab_error": 12.378257751464844,
+      "within_15": 0.7181179523468018,
+      "saturation": 8.172858238220215,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5554279987887977,
+      "spread": 7.212107181549072,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.493173899623659
+    },
+    {
+      "temperature": 0.65,
+      "ab_error": 12.319997787475586,
+      "within_15": 0.7181037068367004,
+      "saturation": 8.463507652282715,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.5751805526318245,
+      "spread": 7.448436737060547,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5093344426596939
+    },
+    {
+      "temperature": 0.8,
+      "ab_error": 12.320555686950684,
+      "within_15": 0.7164391875267029,
+      "saturation": 8.832213401794434,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.600237820312735,
+      "spread": 7.681128025054932,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5252461959129219
+    },
+    {
+      "temperature": 1.0,
+      "ab_error": 12.406065940856934,
+      "within_15": 0.7116146683692932,
+      "saturation": 9.372156143188477,
+      "saturation_true": 14.714523315429688,
+      "saturation_ratio": 0.6369323655466846,
+      "spread": 7.934502124786377,
+      "spread_true": 14.623862266540527,
+      "spread_ratio": 0.5425722685408874
+    }
+  ],
+  "n_bins": 124,
+  "test": {
+    "ab_error": 12.478484153747559,
+    "within_15": 0.7169433832168579,
+    "saturation": 8.052080154418945,
+    "saturation_true": 14.714523315429688,
+    "saturation_ratio": 0.5472199120426493,
+    "spread": 7.078531265258789,
+    "spread_true": 14.623862266540527,
+    "spread_ratio": 0.4840397930616801
+  },
+  "per_class": [
+    {
+      "class": 0,
+      "ab_error": 12.394165992736816,
+      "saturation": 8.518379211425781,
+      "saturation_true": 14.484330177307129,
+      "saturation_ratio": 0.5881099855602356
+    },
+    {
+      "class": 1,
+      "ab_error": 12.097505569458008,
+      "saturation": 5.428254127502441,
+      "saturation_true": 12.291932106018066,
+      "saturation_ratio": 0.44161113815823927
+    },
+    {
+      "class": 2,
+      "ab_error": 14.153095245361328,
+      "saturation": 9.357620239257812,
+      "saturation_true": 17.108875274658203,
+      "saturation_ratio": 0.546945377123556
+    },
+    {
+      "class": 3,
+      "ab_error": 11.722599983215332,
+      "saturation": 7.120483875274658,
+      "saturation_true": 12.841721534729004,
+      "saturation_ratio": 0.5544804764702383
+    },
+    {
+      "class": 4,
+      "ab_error": 14.072356224060059,
+      "saturation": 11.58771800994873,
+      "saturation_true": 18.466299057006836,
+      "saturation_ratio": 0.6275062466050498
+    },
+    {
+      "class": 5,
+      "ab_error": 12.345513343811035,
+      "saturation": 7.206737518310547,
+      "saturation_true": 14.345144271850586,
+      "saturation_ratio": 0.5023816687889502
+    },
+    {
+      "class": 6,
+      "ab_error": 14.193581581115723,
+      "saturation": 10.249456405639648,
+      "saturation_true": 18.604808807373047,
+      "saturation_ratio": 0.5509036137784877
+    },
+    {
+      "class": 7,
+      "ab_error": 11.804269790649414,
+      "saturation": 9.441058158874512,
+      "saturation_true": 15.064260482788086,
+      "saturation_ratio": 0.6267189929211291
+    },
+    {
+      "class": 8,
+      "ab_error": 10.731456756591797,
+      "saturation": 6.380647659301758,
+      "saturation_true": 12.080146789550781,
+      "saturation_ratio": 0.5281928912338185
+    },
+    {
+      "class": 9,
+      "ab_error": 11.270291328430176,
+      "saturation": 5.230444431304932,
+      "saturation_true": 11.857719421386719,
+      "saturation_ratio": 0.44110037060509644
+    }
+  ]
+}

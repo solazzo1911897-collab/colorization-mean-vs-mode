@@ -1,0 +1,22 @@
+{
+  "grey": {
+    "ab_error": 14.714523315429688,
+    "within_15": 0.6206886768341064,
+    "saturation": 0.0,
+    "saturation_true": 14.714523315429688,
+    "saturation_ratio": 0.0,
+    "spread": 0.0,
+    "spread_true": 14.623862266540527,
+    "spread_ratio": 0.0
+  },
+  "training_mean": {
+    "ab_error": 14.643956184387207,
+    "within_15": 0.6416627764701843,
+    "saturation": 5.736647129058838,
+    "saturation_true": 14.714523315429688,
+    "saturation_ratio": 0.3898629269929101,
+    "spread": 4.29194733442273e-06,
+    "spread_true": 14.623862266540527,
+    "spread_ratio": 2.934893160367578e-07
+  }
+}

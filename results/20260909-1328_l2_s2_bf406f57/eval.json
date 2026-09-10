@@ -1,0 +1,99 @@
+{
+  "config": {
+    "loss": "l2",
+    "seed": 2,
+    "width": 64,
+    "epochs": 20,
+    "batch_size": 128,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "bin_size": 10.0,
+    "bin_min_count": 500,
+    "eval_temperature": 1.0,
+    "device": "auto",
+    "data_root": "data"
+  },
+  "n_test": 10000,
+  "test": {
+    "ab_error": 12.474340438842773,
+    "within_15": 0.7046753168106079,
+    "saturation": 9.284708976745605,
+    "saturation_true": 14.714523315429688,
+    "saturation_ratio": 0.6309894501991536,
+    "spread": 7.95340633392334,
+    "spread_true": 14.623862266540527,
+    "spread_ratio": 0.5438649646010941
+  },
+  "per_class": [
+    {
+      "class": 0,
+      "ab_error": 12.691439628601074,
+      "saturation": 7.936805248260498,
+      "saturation_true": 14.484330177307129,
+      "saturation_ratio": 0.5479580450806928
+    },
+    {
+      "class": 1,
+      "ab_error": 12.095465660095215,
+      "saturation": 5.822689533233643,
+      "saturation_true": 12.291932106018066,
+      "saturation_ratio": 0.4737001053221636
+    },
+    {
+      "class": 2,
+      "ab_error": 13.876837730407715,
+      "saturation": 11.044836044311523,
+      "saturation_true": 17.108875274658203,
+      "saturation_ratio": 0.6455617839865382
+    },
+    {
+      "class": 3,
+      "ab_error": 11.912638664245605,
+      "saturation": 9.066290855407715,
+      "saturation_true": 12.841721534729004,
+      "saturation_ratio": 0.7060027606804073
+    },
+    {
+      "class": 4,
+      "ab_error": 13.88099193572998,
+      "saturation": 13.772990226745605,
+      "saturation_true": 18.466299057006836,
+      "saturation_ratio": 0.7458446429480733
+    },
+    {
+      "class": 5,
+      "ab_error": 12.399144172668457,
+      "saturation": 9.397961616516113,
+      "saturation_true": 14.345144271850586,
+      "saturation_ratio": 0.6551318995764784
+    },
+    {
+      "class": 6,
+      "ab_error": 13.699091911315918,
+      "saturation": 13.0637788772583,
+      "saturation_true": 18.604808807373047,
+      "saturation_ratio": 0.702172164869609
+    },
+    {
+      "class": 7,
+      "ab_error": 11.787955284118652,
+      "saturation": 11.10108757019043,
+      "saturation_true": 15.064260482788086,
+      "saturation_ratio": 0.7369155348099667
+    },
+    {
+      "class": 8,
+      "ab_error": 11.103361129760742,
+      "saturation": 5.90133810043335,
+      "saturation_true": 12.080146789550781,
+      "saturation_ratio": 0.4885154297576876
+    },
+    {
+      "class": 9,
+      "ab_error": 11.296475410461426,
+      "saturation": 5.739318370819092,
+      "saturation_true": 11.857719421386719,
+      "saturation_ratio": 0.48401536306109516
+    }
+  ]
+}
