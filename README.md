@@ -13,7 +13,7 @@ optimiser, the same schedule, the same number of steps and the same seeds, and
 differ only in the last layer and the loss:
 
 - **squared error** on the two chroma channels of Lab,
-- **cross-entropy** over a few hundred quantised colour bins, read back out at a
+- **cross-entropy** over 124 quantised colour bins, read back out at a
   temperature that interpolates between the mean of the predicted distribution
   and its mode.
 
@@ -22,13 +22,17 @@ chroma. Sweeping the temperature turns the second model's single prediction into
 a curve trading colour accuracy against colour variety, and the first model sits
 on that curve rather than off it. Read out at temperature 1, the second
 reproduces the first pixel by pixel: 3.11 Lab units apart, against the 12.49 that
-separates either from the truth, and the same figure when the two runs come from
-different seeds. That is what identifies the desaturation as a property of the
-question the loss asks rather than of any particular model or run.
+separates either from the truth. The scale that makes 3.11 small is not that
+distance but the run-to-run floor, since two squared error models differing only
+in their seed are 2.73 apart and two classification models 2.45: changing the
+loss moves the output about as far as changing the initialisation does. That is
+what identifies the desaturation as a property of the question the loss asks
+rather than of any particular model or run.
 
 A prediction that did not survive is reported too: the desaturation was expected
-to be worst where colour is least predictable, and grouped by CIFAR-10 class it
-shows no such relation.
+to be worst where colour is least predictable, and neither grouping by CIFAR-10
+class nor sorting pixels by the model's own predictive entropy shows any such
+relation.
 
 ## What is taken from previous work, and what is not
 
@@ -48,7 +52,8 @@ and the seeds all held fixed, so that the only difference is the loss; the
 frontier is traced by one knob rather than by two separately tuned systems; and
 the readout comparison in `scripts/mechanism.py` tests whether the two networks
 have in fact learned the same conditional distribution and differ only in how it
-is collapsed to one colour.
+is collapsed to one colour, read against the only scale that makes the question
+answerable, which is how far apart two runs of one loss are.
 
 Three deliberate departures from Zhang et al., all of which make this a smaller
 experiment rather than an improved method:
@@ -72,8 +77,9 @@ library, and is checked against the published Lab values of the sRGB primaries.
 
 ## Running it
 
-Requires [uv](https://docs.astral.sh/uv/). Everything runs on CPU; on a laptop
-GPU (Apple MPS or CUDA) the full set of runs takes about three hours.
+Requires [uv](https://docs.astral.sh/uv/). Apple MPS is picked up
+automatically, CPU is the fallback, and `device: cuda` in a config selects a
+CUDA card. The full set of runs takes about three hours on an M2.
 
 ```bash
 uv sync
@@ -91,7 +97,9 @@ uv run python scripts/train.py config/l2.yaml --seed 0
 uv run python scripts/train.py config/classification.yaml --seed 0
 uv run python scripts/evaluate.py     # test metrics, and the temperature sweep
 uv run python scripts/mechanism.py    # squared error against the annealed mean
+uv run python scripts/bins_check.py   # what the quantisation costs
 uv run python scripts/figures.py      # everything in figures/
+uv run python scripts/entropy.py      # vividness against per-pixel ambiguity
 ```
 
 ## Layout
@@ -108,13 +116,24 @@ Each run directory is named by date, loss and seed, and contains the exact
 config it was run with, a `metrics.jsonl` with one line per epoch, and an
 `eval.json` written by `scripts/evaluate.py`.
 
-## What is not committed
+## What is and is not committed
 
-`data/` and the checkpoints in `results/*/checkpoint.pt`. Both are regenerated
-by `run_all.sh` in a few hours, so committing them would trade a large
-repository for an afternoon of somebody else's time exactly once. The per-epoch
-metrics and the evaluation output are committed, so the figures can be rebuilt
-without retraining.
+`data/` is not: `torchvision` fetches it on first use, and 170 MB of somebody
+else's copy of CIFAR-10 does not belong here.
+
+The six checkpoints are, at 4.6 MB in total. They take three hours to retrain
+and every figure except the frontier needs them, so committing them is the
+difference between rebuilding the whole report in two minutes and rebuilding it
+in an afternoon. The per-epoch metrics and the evaluation output are committed
+for the same reason.
+
+So a fresh clone reproduces every number in the report immediately, and every
+figure once `torchvision` has fetched CIFAR-10, without training anything:
+
+```bash
+uv run python scripts/report_numbers.py
+uv run python scripts/figures.py
+```
 
 ## Notes on the setup
 
@@ -123,12 +142,16 @@ guessed, and because euclidean distance in it is a usable stand-in for perceived
 colour difference. The conversion is in `colorization/color.py` and matches the
 published values for the sRGB primaries to two decimals.
 
-**Bins.** The `ab` plane is cut into 10 by 10 Lab unit cells and the cells the
-training data does not use are dropped, which leaves a few hundred. Encoding a
-pixel to its bin goes through a lookup table rather than a distance matrix. On
-two million real pixels it picks the same centre as the exact calculation
-97.4% of the time, and the ones it misses land 0.004% further away on
-average.
+**Bins.** The `ab` plane is cut into 10 by 10 Lab unit cells, and the cells
+carrying fewer than 500 of the training pixels sampled are dropped, which leaves
+124 holding 99.9% of them. That grid is not what limits the vividness of the
+output: quantising the ground truth itself to those 124 centres scores 109.4% of
+the truth's own chroma, above it rather than below.
+
+Encoding a pixel to its bin goes through a lookup table rather than a distance
+matrix. On two million real pixels it picks the same centre as the exact
+calculation 97.2% of the time, and the ones it misses land 0.003% further away
+on average. Both figures come from `scripts/bins_check.py`.
 
 **Class labels.** CIFAR-10 comes with them, but the colourisers never see them.
 They appear only in the per-class analysis, where they are used to group test
